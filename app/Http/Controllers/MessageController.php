@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageSent;
+use App\Http\Resources\UserResource;
 use App\Models\Message;
 use App\Http\Requests\StoreMessageRequest;
 use App\Http\Requests\UpdateMessageRequest;
+use Illuminate\Support\Facades\Auth;
+use Pusher\Pusher;
 
 class MessageController extends Controller
 {
@@ -31,18 +35,24 @@ class MessageController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreMessageRequest  $request
+     * @param \App\Http\Requests\StoreMessageRequest $request
      * @return \Illuminate\Http\Response
      */
     public function store(StoreMessageRequest $request)
     {
-        dd($request->all());
+        $message = Message::create([
+            'message'     => $request->message,
+            'sender_id'   => Auth::id(),
+            'receiver_id' => $request->receiver_id
+        ]);
+        broadcast(new MessageSent(UserResource::make(Auth::user()), $message))->toOthers();
+        return ($request->all());
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Message  $message
+     * @param \App\Models\Message $message
      * @return \Illuminate\Http\Response
      */
     public function show(Message $message)
@@ -53,7 +63,7 @@ class MessageController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Message  $message
+     * @param \App\Models\Message $message
      * @return \Illuminate\Http\Response
      */
     public function edit(Message $message)
@@ -64,8 +74,8 @@ class MessageController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateMessageRequest  $request
-     * @param  \App\Models\Message  $message
+     * @param \App\Http\Requests\UpdateMessageRequest $request
+     * @param \App\Models\Message $message
      * @return \Illuminate\Http\Response
      */
     public function update(UpdateMessageRequest $request, Message $message)
@@ -76,7 +86,7 @@ class MessageController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Message  $message
+     * @param \App\Models\Message $message
      * @return \Illuminate\Http\Response
      */
     public function destroy(Message $message)

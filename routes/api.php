@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\API\LoginController;
+use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\MessageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Pusher\Pusher;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +26,13 @@ Route::post('/register', [LoginController::class, 'register']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/users',[UserController::class, 'index']);
     Route::get('/logout', [LoginController::class, 'logout']);
-    Route::post('/message',[MessageController::class, 'store']);
+    Route::post('/message', [MessageController::class, 'store']);
+    Route::post('test', function (Request $request) {
+        (new Pusher(config('broadcasting.connections.pusher.key'),
+            config('broadcasting.connections.pusher.secret'),
+            config('broadcasting.connections.pusher.app_id'),
+            config('broadcasting.connections.pusher.options')))->trigger('my-channel-2', 'my-event', ['message' => $request->message]);
+    });
 });
