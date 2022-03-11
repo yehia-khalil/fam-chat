@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
 use App\Events\MessageSent;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\Message;
 use App\Http\Requests\StoreMessageRequest;
@@ -45,8 +46,8 @@ class MessageController extends Controller
             'sender_id'   => Auth::id(),
             'receiver_id' => $request->receiver_id
         ]);
-        broadcast(new MessageSent(UserResource::make(Auth::user()), $message))->toOthers();
-        return ($request->all());
+        broadcast(new MessageSent(Auth::user(), $message, $request->receiver_id))->toOthers();
+        return $message;
     }
 
     /**

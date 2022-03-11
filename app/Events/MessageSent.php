@@ -18,15 +18,17 @@ class MessageSent implements ShouldBroadcast
 
     public $user;
     public $message;
+    public $receiver_id;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(User $user, Message $message)
+    public function __construct(User $user, Message $message, $receiver)
     {
         $this->user = $user->id;
         $this->message = $message->message;
+        $this->receiver_id = $receiver;
     }
 
     /**
@@ -36,7 +38,7 @@ class MessageSent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('my-channel');
+        return new PrivateChannel('my-channel-'.$this->receiver_id);
     }
 
     public function broadcastAs()
